@@ -1,32 +1,18 @@
-FROM php:8.2-fpm
+FROM php:8.2-cli
 
-# Install system dependencies
+# Install extension bawaan yang wajib buat Laravel
 RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip
+    libzip-dev zip unzip git \
+    && docker-php-ext-install zip pdo_mysql
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
-
-# Get latest Composer
+# Install Composer langsung dari image resmi
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www
+COPY . .
 
-# Copy existing application directory contents
-COPY . /var/www
+# Jalankan composer install saat build image
+RUN composer install --no-interaction --optimize-autoloader
 
-# Install composer dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev
-
-EXPOSE 9000
-CMD ["php-fpm"]
+# Jalankan perintah serve sebagai default command container
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
