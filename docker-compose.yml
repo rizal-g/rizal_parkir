@@ -1,26 +1,23 @@
 version: '3.8'
+
 services:
   app_rizal:
     build:
       context: .
       dockerfile: Dockerfile
-#    container_name: laravel_app_rizal
     restart: unless-stopped
-    working_dir: /var/www
     ports:
-      - "8001-8003:8000" # <-- Port dinamis untuk scaling 3 kontainer
+      - "8001-8003:8000"  # Mengunci pemetaan port fisik VM ke internal container
+    volumes:
+      - ./:/var/www
     depends_on:
       - db_rizal
 
   db_rizal:
     image: mysql:8.0
-    container_name: mysql_db_rizal
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: db_parkir_rizal       
-      MYSQL_ROOT_PASSWORD: root             
-    volumes:
-      - dbdata_rizal:/var/lib/mysql
-
-volumes:
-  dbdata_rizal:
+      MYSQL_ROOT_PASSWORD: password_lu
+      MYSQL_DATABASE: parkir_rizal
+    ports:
+      - "3306:3306"
